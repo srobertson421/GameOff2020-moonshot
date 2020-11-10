@@ -5,7 +5,9 @@ import man from './assets/man.png';
 const gameScene = new Phaser.Scene('Game');
 
 gameScene.init = function() {
-  this.playerSpeed = 200;
+  this.walkSpeed = 200;
+  this.runSpeed = 300;
+  this.playerSpeed = this.walkSpeed;
   this.gameWidth = this.sys.game.config.width;
   this.gameHeight = this.sys.game.config.height;
   this.centerWidth = this.sys.game.config.width / 2;
@@ -19,65 +21,103 @@ gameScene.preload = function() {
 gameScene.create = function() {
   this.player = this.physics.add.sprite(this.centerWidth, this.centerHeight, 'player', 0);
   this.player.setCollideWorldBounds(true);
+  this.player.setBodySize(25, 30);
+  this.player.body.setMaxVelocity(this.runSpeed);
 
   this.cursorKeys = this.input.keyboard.createCursorKeys();
 
   this.anims.create({
     key: 'walk-down',
-    frames: this.anims.generateFrameNumbers('player', { start: 0, end: 4 }),
-    frameRate: 10
+    frames: this.anims.generateFrameNumbers('player', { start: 1, end: 4 }),
+    frameRate: 7
   });
   this.anims.create({
     key: 'walk-right',
-    frames: this.anims.generateFrameNumbers('player', { start: 5, end: 9 }),
-    frameRate: 10
+    frames: this.anims.generateFrameNumbers('player', { start: 6, end: 9 }),
+    frameRate: 7
   });
   this.anims.create({
     key: 'walk-up',
-    frames: this.anims.generateFrameNumbers('player', { start: 10, end: 14 }),
-    frameRate: 10
+    frames: this.anims.generateFrameNumbers('player', { start: 11, end: 14 }),
+    frameRate: 7
   });
   this.anims.create({
     key: 'walk-left',
-    frames: this.anims.generateFrameNumbers('player', { start: 15, end: 19 }),
-    frameRate: 10
+    frames: this.anims.generateFrameNumbers('player', { start: 16, end: 19 }),
+    frameRate: 7
   });
   this.anims.create({
     key: 'idle',
     frames: this.anims.generateFrameNumbers('player', { start: 20, end: 21 }),
-    frameRate: 10
+    frameRate: 7
   });
 }
 
-let hasLogged = false;
+// let hasLogged = false;
+
+let direction = null;
+const idleFrames = {
+  'down': 0,
+  'right': 5,
+  'up': 10,
+  'left': 15
+}
 
 gameScene.update = function() {
-  if(!hasLogged) {
-    console.log(this);
-    hasLogged = true;
+  // if(!hasLogged) {
+  //   console.log(this);
+  //   hasLogged = true;
+  // }
+
+  if(this.cursorKeys.shift.isDown) {
+    this.player.anims.setTimeScale(1.75);
+    this.playerSpeed = this.runSpeed;
+  } else {
+    this.player.anims.setTimeScale(1);
+    this.playerSpeed = this.walkSpeed;
   }
 
 
   if(this.cursorKeys.left.isDown) {
     this.player.body.setVelocityX(-this.playerSpeed);
-    this.player.anims.play('walk-left', true);
+    if(!direction || direction === 'right') {
+      direction = 'left';
+    }
   } else if(this.cursorKeys.right.isDown) {
     this.player.body.setVelocityX(this.playerSpeed);
-    this.player.anims.play('walk-right', true);
+    if(!direction || direction === 'left') {
+      direction = 'right';
+    }
   } else {
     this.player.body.setVelocityX(0);
-    // this.player.setFrame(0);
+    if(direction === 'left' || direction === 'right') {
+      this.player.anims.stop();
+      this.player.setFrame(idleFrames[direction]);
+      direction = null;
+    }
   }
 
   if(this.cursorKeys.up.isDown) {
     this.player.body.setVelocityY(-this.playerSpeed);
-    this.player.anims.play('walk-up', true);
+    if(!direction || direction === 'down') {
+      direction = 'up';
+    }
   } else if(this.cursorKeys.down.isDown) {
     this.player.body.setVelocityY(this.playerSpeed);
-    this.player.anims.play('walk-down', true);
+    if(!direction || direction === 'up') {
+      direction = 'down';
+    }
   } else {
     this.player.body.setVelocityY(0);
-    // this.player.setFrame(0);
+    if(direction === 'up' || direction === 'down') {
+      this.player.anims.stop();
+      this.player.setFrame(idleFrames[direction]);
+      direction = null;
+    }
+  }
+
+  if(direction) {
+    this.player.anims.play(`walk-${direction}`, true);
   }
 }
 
