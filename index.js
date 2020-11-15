@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 
-import man from './assets/man.png';
+import playerSheet from './assets/spaceman.png';
+import landscapeTiles from './assets/craters.png';
 
 const gameScene = new Phaser.Scene('Game');
 
 gameScene.init = function() {
-  this.walkSpeed = 200;
-  this.runSpeed = 300;
+  this.walkSpeed = 80;
+  this.runSpeed = 150;
   this.playerSpeed = this.walkSpeed;
   this.gameWidth = this.sys.game.config.width;
   this.gameHeight = this.sys.game.config.height;
@@ -15,42 +16,60 @@ gameScene.init = function() {
 }
 
 gameScene.preload = function() {
-  this.load.spritesheet('player', man, { frameWidth: 50, frameHeight: 70 });
+  this.load.spritesheet('player', playerSheet, { frameWidth: 8, frameHeight: 8 });
+  this.load.spritesheet('ground', landscapeTiles, { frameWidth: 8, frameHeight: 8 });
 }
 
 gameScene.create = function() {
+  for(let x = 0; x < 100; x++) {
+    for(let y = 0; y < 75; y++) {
+      const tile = this.add.image(
+        x * 8,
+        y * 8,
+        'ground',
+        Phaser.Math.RND.pick([3,5])
+      );
+
+      tile.setOrigin(0);
+    }
+  }
+
   this.player = this.physics.add.sprite(this.centerWidth, this.centerHeight, 'player', 0);
   this.player.setCollideWorldBounds(true);
-  this.player.setBodySize(25, 30);
+  this.player.setBodySize(8, 8);
   this.player.body.setMaxVelocity(this.runSpeed);
+
+  this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+  this.cameras.main.setZoom(4);
+  this.cameras.main.setBounds(0, 0, 800, 600);
 
   this.cursorKeys = this.input.keyboard.createCursorKeys();
 
   this.anims.create({
     key: 'walk-down',
-    frames: this.anims.generateFrameNumbers('player', { start: 1, end: 4 }),
+    frames: this.anims.generateFrameNumbers('player', { start: 1, end: 2 }),
     frameRate: 7
   });
   this.anims.create({
     key: 'walk-right',
-    frames: this.anims.generateFrameNumbers('player', { start: 6, end: 9 }),
+    frames: this.anims.generateFrameNumbers('player', { start: 6, end: 8 }),
     frameRate: 7
   });
   this.anims.create({
     key: 'walk-up',
-    frames: this.anims.generateFrameNumbers('player', { start: 11, end: 14 }),
+    frames: this.anims.generateFrameNumbers('player', { start: 4, end: 5 }),
     frameRate: 7
   });
   this.anims.create({
     key: 'walk-left',
-    frames: this.anims.generateFrameNumbers('player', { start: 16, end: 19 }),
+    frames: this.anims.generateFrameNumbers('player', { start: 9, end: 11 }),
     frameRate: 7
   });
-  this.anims.create({
-    key: 'idle',
-    frames: this.anims.generateFrameNumbers('player', { start: 20, end: 21 }),
-    frameRate: 7
-  });
+  // this.anims.create({
+  //   key: 'idle',
+  //   frames: this.anims.generateFrameNumbers('player', { start: 20, end: 21 }),
+  //   frameRate: 7
+  // });
 }
 
 // let hasLogged = false;
@@ -58,9 +77,9 @@ gameScene.create = function() {
 let direction = null;
 const idleFrames = {
   'down': 0,
-  'right': 5,
-  'up': 10,
-  'left': 15
+  'right': 6,
+  'up': 3,
+  'left': 9
 }
 
 gameScene.update = function() {
@@ -132,7 +151,7 @@ const config = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: true
+      debug: false
     }
   },
   scene: gameScene
