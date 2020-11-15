@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 
 import playerSheet from './assets/spaceman.png';
 import landscapeTiles from './assets/craters.png';
+import bgMusicOgg from './assets/bg-music.ogg';
+import bgMusicMp3 from './assets/bg-music.mp3';
 
 const gameScene = new Phaser.Scene('Game');
 
@@ -18,9 +20,18 @@ gameScene.init = function() {
 gameScene.preload = function() {
   this.load.spritesheet('player', playerSheet, { frameWidth: 8, frameHeight: 8 });
   this.load.spritesheet('ground', landscapeTiles, { frameWidth: 8, frameHeight: 8 });
+  this.load.audio('bg-music', [
+    bgMusicOgg,
+    bgMusicMp3
+  ]);
 }
 
 gameScene.create = function() {
+  this.sound.add('bg-music').play({
+    volume: 0.5,
+    loop: true
+  });
+
   for(let x = 0; x < 100; x++) {
     for(let y = 0; y < 75; y++) {
       const tile = this.add.image(
