@@ -9,6 +9,6 @@
   },
   "browserslist": ">0.75%, not ie 11, not UCAndroid >0, not OperaMini all",
   "dependencies": {
-    "phaser": "^3.24.1"
+    "phaser": "^3.50.0-beta.10"
   }
 }
